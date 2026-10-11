@@ -1,0 +1,5 @@
+# Store all text with LF line endings in the repository
+* text=auto eol=lf
+# Frozen inputs and their manifest must stay byte-identical on every OS
+data/frozen/** -text
+profiles/*.csv -text
