@@ -1,0 +1,26 @@
+[project]
+name = "ogb-dc"
+version = "0.1.0.dev0"
+description = "OGB-DC: Off-Grid Benchmark for Data Center Power"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11,<3.14"
+authors = [{name = "Richard K. Sambian"}]
+dependencies = [
+  "pyyaml==6.0.3",
+  "requests==2.34.2",
+  "pandas==2.3.*",
+  "numpy==2.*",
+  "nlr-pysam==8.0.0",      # PySAM >= 8 ships as nlr-pysam; fallback: nrel-pysam==7.1.1.post1
+  "jsonschema==4.*",
+]
+
+[project.optional-dependencies]
+pypsa = ["pypsa==1.4.0", "highspy>=1.8", "linopy>=0.5"]   # used only if ADR-0001 is "go"
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.setuptools]
+packages = []
+
+# Generate the lockfile after the first successful install:
+#   pip freeze > requirements.lock      (or: uv pip compile pyproject.toml -o requirements.lock)

@@ -1,0 +1,11 @@
+{
+  "title": "OGB-DC: Off-Grid Benchmark for Data Center Power",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [{"name": "Sambian, Richard K.", "orcid": "0000-0000-0000-0000"}],
+  "keywords": ["data center", "off-grid", "microgrid", "benchmark", "hydrogen", "REopt", "PyPSA", "PySAM", "ATB"],
+  "description": "A fixed set of 180 reference cases (3 load sizes, 12 U.S. sites, 5 supply architectures) for self-supplied data-center power, with frozen open federal inputs and a common results template.",
+  "related_identifiers": [
+    {"identifier": "10.5281/zenodo.TODO-DATASET", "relation": "requires", "resource_type": "dataset"}
+  ]
+}

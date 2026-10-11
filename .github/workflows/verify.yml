@@ -1,0 +1,19 @@
+name: verify
+on: [push, pull_request]
+jobs:
+  spec-and-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install pyyaml jsonschema pytest nlr-pysam==8.0.0
+      - name: unit tests (profile units, results parsing)
+        run: python -m pytest -q tests
+      - name: cases.yaml expands to 180 cases
+        run: python scripts/expand_cases.py
+      - name: results template matches schema
+        run: python -c "import json,csv;s=json.load(open('results/results_schema.json'));h=next(csv.reader(l for l in open('results/results_template.csv') if not l.startswith('#')));missing=[c for c in s['required_columns'] if c not in h];assert not missing,missing;print('template ok')"
+      - name: frozen dataset hashes
+        run: test -s data/frozen/MANIFEST.sha256 && python scripts/verify_manifest.py || echo "no frozen data yet"
+  # ci-subset (6 cases) is added once the reference model solves: needs Julia + HiGHS setup.

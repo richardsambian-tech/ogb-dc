@@ -1,0 +1,320 @@
+# OGB-DC: Off-Grid Benchmark for Data Center Power
+# Case specification, schema version 0.1 (DRAFT — 10 Oct 2026)
+#
+# This file is the single source of truth for the benchmark grid.
+# 3 loads x 12 sites x 5 architectures = 180 cases.
+# Case IDs are built as  {load.id}-{site.id}-{architecture.id}, e.g. L2-TXA-A4.
+#
+# Every value marked  status: proposed  is a first-draft default that the lead
+# developer must confirm or change before tagging v0.0.1-spec.  Nothing here
+# should change after the frozen dataset is deposited without a new version.
+
+benchmark:
+  name: OGB-DC
+  title: Off-Grid Benchmark for Data Center Power
+  schema_version: "0.1"
+  spec_status: draft
+  lead_developer: Richard K. Sambian
+  license_code: MIT
+  license_data: CC-BY-4.0
+  releases:
+    v0.1: 2026-12          # inputs frozen, results preliminary
+    v1.0: 2027-03          # frozen cases + dataset DOI + results DOI
+  decision_gates:
+    pypsa_go_no_go: 2026-11-30
+
+# ---------------------------------------------------------------------------
+# Time basis
+# ---------------------------------------------------------------------------
+time:
+  status: proposed
+  resolution_minutes: 60
+  timezone: UTC                 # all resource files pulled with utc=true
+  leap_day: false               # drop 29 Feb so every year is 8760 h
+  # Weather years. 2007-2013 is the overlap of NSRDB PSM and the original
+  # WIND Toolkit (wtk-download / wtk-srw-download).  Alternative: WTK-LED CONUS
+  # for newer years — decide before the dataset freeze.
+  weather_years: [2007, 2008, 2009, 2010, 2011, 2012, 2013]
+  benchmark_year: 2012          # single-year runs for v0.1; multi-year in v1.0
+  multi_year_mode: sequential   # sequential | independent | representative
+
+# ---------------------------------------------------------------------------
+# Load definitions
+# ---------------------------------------------------------------------------
+loads:
+  status: proposed
+  profile: flat                 # flat | profile_csv (hook for v1.0)
+  pue: 1.20                     # facility_mw = it_mw * pue
+  items:
+    - id: L1
+      name: 50 MW facility
+      facility_mw: 50
+      it_mw: 41.7
+    - id: L2
+      name: 200 MW facility
+      facility_mw: 200
+      it_mw: 166.7
+    - id: L3
+      name: 500 MW facility
+      facility_mw: 500
+      it_mw: 416.7
+
+# ---------------------------------------------------------------------------
+# Sites — 12 U.S. locations chosen for solar/wind/gas-price diversity.
+# lat/lon are city-centre approximations; the NSRDB and WIND Toolkit APIs snap
+# to the nearest grid cell.  Verify and replace with the exact grid-point
+# coordinates returned by the API (write them to data/frozen/site_gridpoints.csv).
+# eia_gas_series: EIA API v2 natural gas price series (N3035 = industrial,
+# N3045 = electric power, by state) — confirm IDs against api.eia.gov.
+# ---------------------------------------------------------------------------
+sites:
+  status: proposed
+  gas_price_sector: industrial    # industrial | electric_power
+  items:
+    - {id: TXA, name: "Amarillo, TX (Panhandle)",     state: TX, lat: 35.22, lon: -101.83, eia_gas_series: NG.N3035TX3.A, region_note: "high wind, good solar, Panhandle gas"}
+    - {id: TXP, name: "Midland, TX (Permian)",         state: TX, lat: 31.99, lon: -102.08, eia_gas_series: NG.N3035TX3.A, region_note: "cheap associated gas, strong solar"}
+    - {id: AZP, name: "Phoenix, AZ",                   state: AZ, lat: 33.45, lon: -112.07, eia_gas_series: NG.N3035AZ3.A, region_note: "best solar, weak wind"}
+    - {id: NVL, name: "Las Vegas, NV",                 state: NV, lat: 36.17, lon: -115.14, eia_gas_series: NG.N3035NV3.A, region_note: "strong solar, major DC cluster"}
+    - {id: VAA, name: "Ashburn, VA (Loudoun)",         state: VA, lat: 39.04, lon: -77.49,  eia_gas_series: NG.N3035VA3.A, region_note: "largest DC market, modest solar, weak wind"}
+    - {id: GAA, name: "Atlanta, GA",                   state: GA, lat: 33.75, lon: -84.39,  eia_gas_series: NG.N3035GA3.A, region_note: "fast-growing DC market, humid subtropical"}
+    - {id: OHC, name: "Columbus, OH",                  state: OH, lat: 39.96, lon: -83.00,  eia_gas_series: NG.N3035OH3.A, region_note: "Midwest DC growth, Appalachian gas"}
+    - {id: ILC, name: "Chicago, IL",                   state: IL, lat: 41.88, lon: -87.63,  eia_gas_series: NG.N3035IL3.A, region_note: "established DC market, cold winters"}
+    - {id: IAD, name: "Des Moines, IA",                state: IA, lat: 41.59, lon: -93.62,  eia_gas_series: NG.N3035IA3.A, region_note: "very strong wind, hyperscale campuses"}
+    - {id: WYC, name: "Cheyenne, WY",                  state: WY, lat: 41.14, lon: -104.82, eia_gas_series: NG.N3035WY3.A, region_note: "exceptional wind, cold, high altitude"}
+    - {id: ORH, name: "Hillsboro, OR",                 state: OR, lat: 45.52, lon: -122.99, eia_gas_series: NG.N3035OR3.A, region_note: "weak solar, Pacific NW DC cluster"}
+    - {id: PAP, name: "Pittsburgh, PA (Marcellus)",    state: PA, lat: 40.44, lon: -80.00,  eia_gas_series: NG.N3035PA3.A, region_note: "cheapest gas basin, poor renewables"}
+
+# ---------------------------------------------------------------------------
+# Resource data sources (frozen inputs)
+# ---------------------------------------------------------------------------
+resources:
+  status: proposed
+  solar:
+    provider: NSRDB
+    api_base: https://developer.nlr.gov/api/nsrdb/v2/solar
+    endpoint: nsrdb-GOES-aggregated-v4-0-0-download   # PSM v4 aggregated, 4 km, 1998 onwards. psm3-2-2 is deprecated (checked 2026-10-11)
+    attributes: [ghi, dni, dhi, air_temperature, wind_speed, surface_albedo]
+    interval_minutes: 60
+    output_format: sam_csv
+  wind:
+    provider: WIND Toolkit
+    api_base: https://developer.nlr.gov/api/wind-toolkit/v2/wind
+    endpoint: wtk-srw-download           # SAM .srw format; 2007-2013
+    hub_height_m: 100
+    output_format: srw
+  technology_costs:
+    provider: NLR Electricity ATB
+    vintage: "2025"
+    version: v1
+    file_date: "2026-08-27"
+    files:
+      - 2025_v1_Workbook_08-27-2026.xlsx
+      - 2025_v1_Model_Parameters_08-27-2026.csv
+    source_url: https://data.openei.org/submissions/8759
+    scenario: Moderate                   # Moderate | Conservative | Advanced
+    cost_year: 2030                      # ATB projection year used for CAPEX/OPEX
+  fuel_prices:
+    provider: EIA
+    api_base: https://api.eia.gov/v2
+    base_year: 2025
+    sensitivity_band: [0.5, 1.5]         # multipliers on base price
+  emissions_factors:
+    natural_gas_kgco2_per_mmbtu: 53.06   # EPA GHG emission factors hub, stationary combustion — verify vintage
+    hydrogen_kgco2_per_mmbtu: 0.0
+
+# ---------------------------------------------------------------------------
+# Technology library — every component an architecture may use.
+# atb_technology / atb_techdetail must match the 2025 ATB workbook names;
+# values marked TODO are to be filled from the frozen workbook, not typed in.
+# ---------------------------------------------------------------------------
+technologies:
+  status: proposed
+  gas_turbine:
+    description: Natural-gas simple-cycle turbine (aeroderivative class), N+1 redundancy applied post-solve
+    atb_technology: NaturalGas_FE
+    atb_techdetail: CTAvgCF              # TODO confirm in 2025 workbook
+    heat_rate_mmbtu_per_mwh: TODO
+    min_load_fraction: 0.30
+    ramp_fraction_per_hour: 1.0
+    size_extendable: true
+  gas_combined_cycle:
+    description: Alternative for L3 if simple-cycle is judged unrealistic at 500 MW
+    atb_technology: NaturalGas_FE
+    atb_techdetail: CCAvgCF              # TODO confirm
+    heat_rate_mmbtu_per_mwh: TODO
+    min_load_fraction: 0.40
+    ramp_fraction_per_hour: 0.5
+    enabled: false
+  h2_capable_turbine:
+    description: Gas turbine capable of 100% H2; cost = gas_turbine CAPEX x premium
+    base: gas_turbine
+    capex_premium_fraction: 0.10         # TODO source (OEM literature); state in SPEC.md
+    h2_blend_fraction_max: 1.0
+    gas_backup_allowed: true             # if false, A5 is zero-fossil
+  pv:
+    atb_technology: UtilityPV
+    atb_techdetail: Class5               # TODO choose resource class per site or single class
+    model: PySAM.Pvwattsv8
+    dc_ac_ratio: 1.3
+    tilt_deg: latitude
+    azimuth_deg: 180
+    losses_pct: 14.0
+    array_type: 2                        # 1-axis tracking
+  wind:
+    atb_technology: LandbasedWind
+    atb_techdetail: Class4               # TODO choose per site from WTK mean speed
+    model: PySAM.Windpower
+    hub_height_m: 100
+    turbine_rating_kw: 3000
+    rotor_diameter_m: 130                # status: proposed. TODO match the ATB 2025 reference land-based turbine
+    wake_loss_pct: 10.0                  # farm-level wake loss on the single-turbine profile (PySAM wake_ext_loss)
+    other_losses_pct: 0.0                # status: proposed. PySAM defaults would add ~16 % silently (SPEC D15)
+    power_curve:                         # status: proposed. Built with PySAM Turbine.calculate_powercurve
+      max_cp: 0.45                       # so the curve's peak equals turbine_rating_kw
+      max_tip_speed_m_per_s: 80
+      max_tip_speed_ratio: 8
+      cut_in_m_per_s: 3
+      cut_out_m_per_s: 25
+      drive_train: 0                     # 0 = 3-stage planetary gearbox
+  battery:
+    atb_technology: Utility-Scale Battery Storage
+    atb_techdetail: 4Hr                  # TODO confirm label
+    duration_h: 4                        # fixed duration for v0.1; free in v1.0 sensitivity
+    roundtrip_efficiency: 0.85
+    soc_min: 0.10
+    soc_max: 1.00
+  electrolyzer:
+    description: PEM electrolyzer (not in Electricity ATB — external source required)
+    source: TODO                         # e.g. DOE Hydrogen Program Record / NLR H2A
+    capex_usd_per_kw: TODO
+    efficiency_kwh_per_kg: 55
+  h2_storage:
+    description: Compressed gaseous H2 storage (tanks or salt cavern where applicable)
+    source: TODO
+    capex_usd_per_kg: TODO
+    h2_lhv_mmbtu_per_kg: 0.1137
+
+# ---------------------------------------------------------------------------
+# Supply architectures — from gas-only to fully hydrogen-capable
+# ---------------------------------------------------------------------------
+architectures:
+  status: proposed
+  items:
+    - id: A1
+      name: Gas-only
+      components: [gas_turbine]
+      description: Reference case. Gas turbines sized to peak load with N+1.
+    - id: A2
+      name: Gas + battery
+      components: [gas_turbine, battery]
+      description: Battery for peak shaving and spinning-reserve displacement.
+    - id: A3
+      name: Gas + solar + battery
+      components: [gas_turbine, pv, battery]
+    - id: A4
+      name: Gas + solar + wind + battery
+      components: [gas_turbine, pv, wind, battery]
+    - id: A5
+      name: Solar + wind + battery + hydrogen-capable turbine
+      components: [pv, wind, battery, electrolyzer, h2_storage, h2_capable_turbine]
+      description: >
+        On-site electrolysis from surplus renewables, H2 storage, and H2-capable
+        turbines.  Whether natural gas backup is permitted is set by
+        technologies.h2_capable_turbine.gas_backup_allowed.
+      model_note: >
+        REopt.jl may not represent the electrolyzer -> H2 storage -> turbine
+        pathway natively; this is the central input to the 30 Nov PyPSA decision.
+
+# ---------------------------------------------------------------------------
+# Constraints applied to every case
+# ---------------------------------------------------------------------------
+constraints:
+  status: proposed
+  reliability:
+    mode: hard                           # hard = constraint; reported = output only
+    max_unserved_energy_fraction: 0.0001 # 99.99 % of annual energy served
+    max_single_outage_h: 4               # reported, not enforced, in v0.1
+  redundancy:
+    gas_turbine_n_plus: 1                # applied as post-solve capacity adder
+  land:
+    enforce: false                       # v1.0 candidate: acres/MW limits for PV & wind
+
+# ---------------------------------------------------------------------------
+# Financial assumptions (policy-neutral by default)
+# ---------------------------------------------------------------------------
+financials:
+  status: proposed
+  currency_year: 2024
+  analysis_period_years: 25
+  real_discount_rate: 0.07
+  inflation_rate: 0.025                  # only if a nominal model requires it
+  tax_rate: 0.0                          # no tax modelling in v0.1
+  itc_fraction: 0.0                      # no incentives by default
+  ptc_usd_per_mwh: 0.0
+  carbon_price_usd_per_tco2: 0.0         # sensitivity: 50, 100, 200
+  degradation_pv_pct_per_year: 0.5
+
+# ---------------------------------------------------------------------------
+# Required outputs — every participating model must report these per case.
+# Column names match results/results_template.csv and results/results_schema.json.
+# ---------------------------------------------------------------------------
+outputs:
+  required:
+    - {name: lcoe_usd_per_mwh,            unit: USD/MWh,   definition: Lifecycle cost / discounted energy served}
+    - {name: npv_cost_usd,                unit: USD,       definition: Present value of all capital, fixed, variable and fuel costs}
+    - {name: unserved_energy_mwh,         unit: MWh/yr,    definition: Annual load not served}
+    - {name: unserved_energy_fraction,    unit: "-",       definition: unserved_energy_mwh / annual_load_mwh}
+    - {name: co2_tonnes_per_year,         unit: tCO2/yr,   definition: Scope-1 combustion emissions}
+    - {name: peak_gas_burn_mmbtu_per_h,   unit: MMBtu/h,   definition: Maximum hourly natural-gas fuel input}
+  recommended:
+    - {name: gas_capacity_mw,             unit: MW}
+    - {name: pv_capacity_mw_dc,           unit: MW_dc}
+    - {name: wind_capacity_mw,            unit: MW}
+    - {name: battery_power_mw,            unit: MW}
+    - {name: battery_energy_mwh,          unit: MWh}
+    - {name: electrolyzer_mw,             unit: MW}
+    - {name: h2_storage_kg,               unit: kg}
+    - {name: annual_gas_mmbtu,            unit: MMBtu/yr}
+    - {name: renewable_fraction,          unit: "-"}
+    - {name: curtailment_mwh,             unit: MWh/yr}
+    - {name: solve_time_s,                unit: s}
+  provenance:                            # mandatory header fields in every results file
+    - model_name
+    - model_version
+    - solver_name
+    - solver_version
+    - git_sha
+    - dataset_doi
+    - run_timestamp_utc
+
+# ---------------------------------------------------------------------------
+# Solver settings for the reference run (status: proposed, see SPEC.md D13).
+# REopt with integer generator decisions is a MILP: a rerun can land anywhere inside
+# the MIP gap, so the gap must sit well below the verification tolerances and the
+# solve must be single-threaded to be repeatable.
+# ---------------------------------------------------------------------------
+solver:
+  status: proposed
+  name: HiGHS
+  threads: 1
+  random_seed: 1234
+  mip_rel_gap: 1.0e-5
+  time_limit_s: 3600
+
+# ---------------------------------------------------------------------------
+# Verification tolerances for clean-run reproduction (make compare)
+# ---------------------------------------------------------------------------
+verification:
+  tolerance:
+    lcoe_usd_per_mwh: {rel: 0.001}
+    npv_cost_usd: {rel: 0.001}
+    unserved_energy_mwh: {abs: 0.0}
+    co2_tonnes_per_year: {rel: 0.001}
+    peak_gas_burn_mmbtu_per_h: {rel: 0.001}
+  ci_subset:                             # 6 cases run on every pull request
+    - L1-TXA-A1
+    - L1-TXA-A5
+    - L2-VAA-A3
+    - L2-IAD-A4
+    - L3-PAP-A1
+    - L3-AZP-A4

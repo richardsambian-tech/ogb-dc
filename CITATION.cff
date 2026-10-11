@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use OGB-DC, please cite the software DOI and the dataset DOI for the version you used."
+title: "OGB-DC: Off-Grid Benchmark for Data Center Power"
+type: software
+version: 0.1.0-dev
+date-released: 2026-12-01
+license: MIT
+repository-code: https://github.com/TODO/ogb-dc
+doi: 10.5281/zenodo.TODO
+authors:
+  - family-names: Sambian
+    given-names: Richard K.
+    orcid: https://orcid.org/0000-0000-0000-0000   # TODO
+keywords: [data center, off-grid, microgrid, benchmark, hydrogen, REopt, PyPSA, PySAM, ATB]
+abstract: >
+  A fixed set of 180 reference cases (3 load sizes, 12 U.S. sites, 5 supply architectures) for
+  self-supplied data-center power, with frozen open federal inputs and a common results template.

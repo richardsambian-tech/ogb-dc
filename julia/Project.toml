@@ -1,0 +1,20 @@
+name = "OGBDCReopt"
+uuid = "8ea6c359-4736-4ab1-9f37-febe4f972aa3"
+authors = ["Richard K. Sambian"]
+version = "0.1.0"
+
+# UUIDs verified against each package's own Project.toml on 2026-10-11.
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+REopt = "d36ad4e8-d74a-4f7a-ace1-eaea049febf6"
+
+[compat]
+REopt = "=1.0.0"
+julia = "1.10"
+
+# First time:  julia --project=julia -e 'using Pkg; Pkg.instantiate()'
+# Then commit the generated julia/Manifest.toml. Every later run uses exactly those versions.

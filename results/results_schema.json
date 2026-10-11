@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OGB-DC results template, schema 0.1",
+  "description": "One row per case_id. Header lines beginning with '#' carry provenance and are mandatory.",
+  "provenance_header": ["model_name", "model_version", "solver_name", "solver_version", "git_sha", "dataset_doi", "run_timestamp_utc"],
+  "required_columns": ["case_id", "lcoe_usd_per_mwh", "npv_cost_usd", "unserved_energy_mwh", "unserved_energy_fraction", "co2_tonnes_per_year", "peak_gas_burn_mmbtu_per_h"],
+  "recommended_columns": ["gas_capacity_mw", "pv_capacity_mw_dc", "wind_capacity_mw", "battery_power_mw", "battery_energy_mwh", "electrolyzer_mw", "h2_storage_kg", "annual_gas_mmbtu", "renewable_fraction", "curtailment_mwh", "solve_time_s", "status", "notes"],
+  "units": {
+    "lcoe_usd_per_mwh": "USD/MWh (currency year per cases.yaml financials)",
+    "npv_cost_usd": "USD, present value of all costs over analysis period",
+    "unserved_energy_mwh": "MWh per benchmark year",
+    "unserved_energy_fraction": "dimensionless, unserved / annual load",
+    "co2_tonnes_per_year": "metric tonnes CO2, scope 1 combustion",
+    "peak_gas_burn_mmbtu_per_h": "MMBtu per hour, maximum over the year",
+    "status": "optimal | feasible | infeasible | not_run"
+  }
+}
